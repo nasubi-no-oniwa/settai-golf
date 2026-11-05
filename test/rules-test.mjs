@@ -1,0 +1,51 @@
+// ランキングのルールの試験（GitHub の上で Firebase の試し用データベースを立てて試す。本番のデータには触らない）
+const NS='ft-green-default-rtdb',PROJ='ft-green',BASE='http://127.0.0.1:9000';
+const b64=o=>Buffer.from(JSON.stringify(o)).toString('base64url');
+const tok=uid=>b64({alg:'none',typ:'JWT'})+'.'+b64({uid,sub:uid,user_id:uid,iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+3600,aud:PROJ,iss:'https://securetoken.google.com/'+PROJ,provider_id:'anonymous',firebase:{sign_in_provider:'anonymous'}})+'.';
+async function req(method,path,uid,body){const r=await fetch(BASE+'/'+path+'.json?ns='+NS+(uid?'&auth='+tok(uid):''),{method,headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});return {ok:r.ok,status:r.status,j:await r.json().catch(()=>null)};}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let fail=0;const ex=(name,res,want)=>{const ok=res.ok===want;console.log((ok?'OK  ':'NG  ')+name+' → '+res.status);if(!ok){fail++;console.log(JSON.stringify(res.j));}};
+const TS={'.sv':'timestamp'};
+const U='user1aaaaaaaaaaaaaaaaaaa',U2='user2bbbbbbbbbbbbbbbbbbb';
+const IN='4.36.90';
+async function ticket(uid,inp){const r=await req('PUT','sg/runs/'+uid,uid,{t:TS,in:inp||IN});const g=await req('GET','sg/runs/'+uid,uid);return {r,st:g.j&&g.j.t};}
+const rec=(st,s,n='テスト',inp=IN)=>({n,s,st,in:inp,v:1,t:TS});
+const dk=()=>Math.floor((Date.now()+32400000)/86400000);
+
+ex('ログインなしで打つ',await req('PUT','sg/runs/'+U,null,{t:TS,in:IN}),false);
+ex('打ち方の形がおかしい',await req('PUT','sg/runs/'+U,U,{t:TS,in:'9.99.999'}),false);
+let tk=await ticket(U);ex('打った瞬間を書く',tk.r,true);
+ex('ほかの人の場所に打つ',await req('PUT','sg/runs/'+U,U2,{t:TS,in:IN}),false);
+ex('すぐにもう一度打つ',await req('PUT','sg/runs/'+U,U,{t:TS,in:IN}),false);
+ex('入る前に記録を送る（10秒の記録をすぐ）',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10000)),false);
+await sleep(8600);
+ex('打ち方がちがう記録',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10000,'テスト','0.0.50')),false);
+ex('始めた時刻がちがう記録',await req('PUT','sg/all/scores/'+U,U,rec(tk.st-5000,10000)),false);
+ex('実際の時間より長い記録（30秒）',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,30000)),false);
+ex('10秒より短い記録',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,9000)),false);
+ex('ほかの人の場所に書く',await req('PUT','sg/all/scores/'+U2,U,rec(tk.st,10000)),false);
+ex('ふつうの記録（10秒）',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10000)),true);
+ex('今日のランキングに書く',await req('PUT','sg/d/scores/'+U,U,{...rec(tk.st,10000),dk:dk()}),true);
+ex('今日のランキングに、ちがう日で書く',await req('PUT','sg/d/scores/'+U2,U2,{...rec(tk.st,10000),dk:dk()-1}),false);
+ex('同じ回でもう一度送る',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10100)),false);
+ex('名前だけ変える',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10000,'なまえ')),true);
+ex('今日のほうも名前だけ変える',await req('PUT','sg/d/scores/'+U,U,{...rec(tk.st,10000,'なまえ'),dk:dk()}),true);
+ex('名前を変えるふりで秒数を変える',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10050,'なまえ')),false);
+ex('13文字の名前',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10000,'あいうえおかきくけこさしす')),false);
+ex('譲った（入る前に折った）',await req('PUT','sg/yuzu/'+U,U,{t:TS,st:tk.st,in:IN,b:4000,v:1}),true);
+ex('同じ回でもう一度譲った',await req('PUT','sg/yuzu/'+U,U,{t:TS,st:tk.st,in:IN,b:4000,v:1}),false);
+ex('まだ折っていない時刻で譲った',await req('PUT','sg/yuzu/'+U2,U2,{t:TS,st:tk.st,in:IN,b:40000,v:1}),false);
+await sleep(2100);
+tk=await ticket(U);await sleep(8600);
+ex('前より悪い記録は全期間に載らない',await req('PUT','sg/all/scores/'+U,U,rec(tk.st,10000)),false);
+ex('今日のほうも前より悪い記録は載らない',await req('PUT','sg/d/scores/'+U,U,{...rec(tk.st,10000),dk:dk()}),false);
+ex('クビになった',await req('PUT','sg/kubi/'+U,U,{t:TS}),true);
+ex('ほかの人をクビにする',await req('PUT','sg/kubi/'+U2,U,{t:TS}),false);
+ex('だれでもランキングを読める',await req('GET','sg/all/scores',null),true);
+ex('だれでも今日のランキングを読める',await req('GET','sg/d/scores',null),true);
+ex('譲った人の数を読める',await req('GET','sg/yuzu',null),true);
+ex('クビの人の数を読める',await req('GET','sg/kubi',null),true);
+ex('hidden に書く',await req('PUT','sg/hidden/'+U,U,true),false);
+ex('ほかの場所に書く',await req('PUT','ft_cells/1/1',U,{n:1}),false);
+console.log(fail?('失敗 '+fail+' 件'):'すべて合格');
+process.exit(fail?1:0);
