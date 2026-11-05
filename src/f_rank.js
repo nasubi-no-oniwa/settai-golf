@@ -31,6 +31,7 @@ $('rankBack').onclick=()=>{if(rankFrom)show('result');else showTitle();};
 $('tabDay').onclick=()=>openRank('d',rankFrom);$('tabAll').onclick=()=>openRank('all',rankFrom);
 function myName(){return ls.get('sg_name','')||t('anon');}
 function showResult(){
+ $('pip').hidden=true;$('pipLbl').hidden=true;
  show('result');setUI('result');$('hud').hidden=true;$('big').innerHTML='';capText('');hideBubs();const r=G.res;
  $('rName').hidden=true;$('renameBtn').hidden=true;const sc=t('seen',{n:seenCount(),m:SG.R.length});
  if(r.kind==='yuzu'){
@@ -149,19 +150,21 @@ async function openRank(board,fromResult){
 $('rankBox').onclick=e=>{const b=e.target.closest('button[data-i]');if(!b)return;startReplay(rankRows[+b.dataset.i]);};
 
 // ===== 再生（途中は早送り） =====
-// 打ってから3秒はふつう → 入る6秒前まで早送り → 最後はふつう
-function playClock(T,real){const a=3,bEnd=Math.max(a,T-6),ffLen=Math.max(0,bEnd-a),ffDur=Math.min(ffLen,Math.max(2,ffLen/6));
- if(real<a)return {t:real,ff:false};if(real<a+ffDur)return {t:a+(real-a)*(ffLen/Math.max(1e-6,ffDur)),ff:ffLen>0};return {t:bEnd+(real-a-ffDur),ff:false};}
-function playLen(T){const a=3,ffLen=Math.max(0,Math.max(a,T-6)-a);return a+Math.min(ffLen,Math.max(2,ffLen/6))+(T-Math.max(a,T-6));}
+// ふつうの速さで見せる所（打った直後・折った瞬間・入る前）以外は早送りにする
+function makeClock(T,b){let K=[[0,3],[Math.max(0,T-6),T]];if(b!=null)K.push([Math.max(0,b-.5),Math.min(T,b+2.6)]);K.sort((x,y)=>x[0]-y[0]);const M=[];for(const k of K){if(M.length&&k[0]<=M[M.length-1][1])M[M.length-1][1]=Math.max(M[M.length-1][1],k[1]);else M.push(k.slice());}
+ const S=[];let pos=0;for(let i=0;i<M.length;i++){if(i>0){const g0=M[i-1][1],g1=M[i][0];if(g1>g0){const d=Math.min(g1-g0,Math.max(1,(g1-g0)/6));S.push({r0:pos,r1:pos+d,t0:g0,t1:g1,ff:true});pos+=d;}}S.push({r0:pos,r1:pos+(M[i][1]-M[i][0]),t0:M[i][0],t1:M[i][1],ff:false});pos+=M[i][1]-M[i][0];}
+ return {len:pos,at(r){for(const x of S)if(r<x.r1)return {t:x.t0+(x.t1-x.t0)*Math.max(0,r-x.r0)/Math.max(1e-6,x.r1-x.r0),ff:x.ff};return {t:T+(r-pos),ff:false};}};}
+function playClock(T,real){return makeClock(T,null).at(real);}
+function playLen(T){return makeClock(T,null).len;}
 let RP=null;
 function startReplay(rec){
  const o=SG.parseIn(rec.in);if(!o)return;const P=SG.shot(o.c,o.d,o.p,SG.seedOf(rec.st));
  show(null);clearActors();newRun();mode='replay';setUI('replay');$('replayBar').hidden=false;$('replayTxt').textContent=t('replaying',{n:rec.n})+'  '+fmt(rec.s)+t('sec');
- AIM.c=o.c;AIM.d=o.d;AIM.p=o.p;setPlan(P,{});RP={P,real:0,last:0};
+ AIM.c=o.c;AIM.d=o.d;AIM.p=o.p;setPlan(P,{});RP={P,real:0,last:0};orbReset();
 }
 function replayFrame(dt,now){
- RP.real+=dt;const P=RP.P;const end=playLen(P.T)+1.5;if(RP.real>end){RP.real=0;RP.last=0;}
- const c=playClock(P.T,RP.real),tt=Math.min(c.t,P.T+1.5);
+ RP.real+=dt;const P=RP.P;if(!RP.ck)RP.ck=makeClock(P.T,null);const end=RP.ck.len+1.5;if(RP.real>end){RP.real=0;RP.last=0;}
+ const c=RP.ck.at(RP.real),tt=Math.min(c.t,P.T+1.5);
  const out=sceneAt(P,tt);if(tt>RP.last)playEv(P,RP.last,tt);const spd=c.ff?(tt-RP.last)/Math.max(1e-4,dt):1;RP.last=tt;
  const D=SG.DIR[P.d];placeMe(D[0],D[1],tt<.25?lerp(-.3-(P.p/100)*2,1.9,tt/.25):1.9,false);placeBoss(tt<P.T?'nervous':'freeze',now/1000,P);
  camForShot(P,tt,out,dt,Math.max(1,spd));$('hudTime').textContent=Math.min(tt,P.T).toFixed(2);$('ff').hidden=!c.ff;

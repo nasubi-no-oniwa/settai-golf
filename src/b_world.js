@@ -6,6 +6,9 @@ R3.setPixelRatio(Math.min(devicePixelRatio,2));
 const S3=new THREE.Scene();
 const SKY=0x9fd3f5;S3.background=new THREE.Color(SKY);S3.fog=new THREE.Fog(SKY,120,700);
 const cam=new THREE.PerspectiveCamera(50,1,.05,1500);
+// 左上の丸い小窓（クラブを折ったあと、いまのボールを映す）
+let pipR=null;const pipCam=new THREE.PerspectiveCamera(55,1,.05,1500);const pipP=new THREE.Vector3(),pipL=new THREE.Vector3();
+function pipRenderer(){if(!pipR){pipR=new THREE.WebGLRenderer({canvas:document.getElementById('pip'),antialias:true,preserveDrawingBuffer:true});pipR.setPixelRatio(1);pipR.setSize(264,264,false);}return pipR;}
 S3.add(new THREE.HemisphereLight(0xffffff,0x5a7a3a,1.15));
 const sun=new THREE.DirectionalLight(0xffffff,1.25);sun.position.set(-30,60,20);S3.add(sun);
 const LAM=c=>new THREE.MeshLambertMaterial({color:c});

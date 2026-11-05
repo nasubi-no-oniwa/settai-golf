@@ -9,7 +9,7 @@ function placeMe(dx,dz,swing,brk){
  const a=swing==null?0:swing;
  me.armL.rotation.x=me.armR.rotation.x=-.35;me.armL.rotation.z=me.armR.rotation.z=a;me.hip.rotation.x=.25;me.neck.rotation.x=.3;
  club.visible=true;clubHead.visible=!brk;
- if(brk){me.armL.rotation.z=-.6;me.armR.rotation.z=.6;me.legR.rotation.x=-.9;me.armL.rotation.x=me.armR.rotation.x=-.9;}
+ if(brk){me.armL.rotation.z=-.5;me.armR.rotation.z=.5;me.legR.rotation.x=-1.2;me.armL.rotation.x=me.armR.rotation.x=-1.1;me.hip.rotation.x=.35;}
 }
 function placeBoss(mode,t,P){
  poseReset(boss);boss.M.color.setHex(mode==='angry'?0xc8302a:0x23315a);
@@ -44,17 +44,26 @@ function camSnap(pos,look){camP.copy(pos);camL.copy(look);}
 function camApply(){cam.position.copy(camP);if(camShake>0){cam.position.x+=(Math.random()-.5)*camShake;cam.position.y+=(Math.random()-.5)*camShake;}cam.lookAt(camL);}
 function camForShot(P,t,out,dt,spd){
  const b=out.ball,C=out.cup;const db=Math.hypot(b.x-C.x,b.z-C.z);
+ if(ORB.on&&t<P.T+.2){const d=7+Math.min(10,Math.max(0,b.y)*.35),cp=Math.cos(ORB.pitch);camGo(V3(b.x+Math.sin(ORB.yaw)*cp*d,Math.max(.4,b.y+Math.sin(ORB.pitch)*d+.4),b.z+Math.cos(ORB.yaw)*cp*d),V3(b.x,b.y,b.z),dt,10);return;}
  if(t>=P.T-2.2&&db<14||t>=P.T){camGo(V3(C.x+3.2,2.3,C.z+5.6),V3(C.x+.4,.3,C.z-.2),dt*spd,3);return;}
  if(out.phase==='fly'){const D=aimDir();const h=Math.max(0,b.y);camGo(V3(b.x-D[0]*7,b.y+3+h*.15,b.z-D[1]*7),V3(b.x,b.y,b.z),dt*spd,4);return;}
  // 長く何も起きない間は、そわそわする部長を映す
- const sg=t>=P.te&&t<P.T?segOf(P,t):null;
- if(sg&&sg.k==='wait'&&sg.s.d>3&&sg.u>.3&&sg.u<.72){camGo(V3(BOSS.x+1.3,1.75,BOSS.z+3.1),V3(BOSS.x,1.25,BOSS.z),dt*spd,14);return;}
+ if(bossCut(P,t)){camGo(V3(BOSS.x+1.3,1.75,BOSS.z+3.1),V3(BOSS.x,1.25,BOSS.z),dt*spd,14);return;}
  let fx=b.x-C.x,fz=b.z-C.z,L=Math.hypot(fx,fz);if(L<1){fx=0;fz=1;L=1;}fx/=L;fz/=L;
  const look=db<12?V3(lerp(b.x,C.x,.35),Math.max(0,b.y)*.8,lerp(b.z,C.z,.35)):V3(b.x,Math.max(0,b.y),b.z);
  const k=7+Math.min(10,Math.max(0,b.y)*.35);
  camGo(V3(b.x+fx*k+fz*2.5,Math.max(2.6,b.y*.7+3),b.z+fz*k-fx*2.5),look,dt*spd,3);
 }
 
+function bossCut(P,t){const sg=t>=P.te&&t<P.T?segOf(P,t):null;return !!(sg&&sg.k==='wait'&&sg.s.d>3&&sg.u>.3&&sg.u<.72);}
+// クラブを折った場面：折った瞬間から先っぽがカップに入るまでを大きく映し、ボールは左上の小窓に映す
+function breakView(P,t,b){if(b==null||t<b)return null;const hd=Math.min(.9,Math.max(.15,P.T-b-.15));const C=cupPos(P,t);const bp=ball.position;const near=Math.hypot(bp.x-C.x,bp.z-C.z)<12||t>P.T-2.2;
+ if(t>=P.T)return null;
+ if(t<b+hd+1.1)return {pos:V3(.9,2.3,3.4),look:V3(0,.35,-4.2),pip:!near};
+ if(!near)return {pos:V3(C.x+2.3,1.5,C.z+3.3),look:V3(C.x,.15,C.z),pip:true};return null;}
+function pipFollow(P,t,dt,first){const b=ball.position,C=cupPos(P,t);let fx=b.x-C.x,fz=b.z-C.z,L=Math.hypot(fx,fz)||1;fx/=L;fz/=L;const k=6+Math.min(8,Math.max(0,b.y)*.3);
+ const pos=V3(b.x+fx*k,Math.max(2,b.y+2.2),b.z+fz*k);if(first){pipP.copy(pos);pipL.copy(b);}else{const a=1-Math.exp(-dt*4);pipP.lerp(pos,a);pipL.lerp(b,a);}pipCam.position.copy(pipP);pipCam.lookAt(pipL);}
+function pipDraw(){const r=pipRenderer();const d=pipCam.position.distanceTo(ball.position);const keep=ball.scale.x;ball.scale.setScalar(Math.max(.06,d*.01)*ballShrink);r.render(S3,pipCam);ball.scale.setScalar(keep);}
 // ===== 遊び =====
 let mode='title';
 const G={};
@@ -65,8 +74,11 @@ let charge=null;
 function powerNow(){if(!charge)return 0;const ph=((performance.now()-charge.t0)/850)%2;return Math.round((ph<1?ph:2-ph)*100);}
 // 入力：画面をなぞって向き
 const pad=$('pad');let drag=null;
-pad.addEventListener('pointerdown',e=>{e.preventDefault();if(!e.isTrusted)return;ac();if(drag)return;drag={id:e.pointerId,x:e.clientX};try{pad.setPointerCapture(e.pointerId)}catch(_){}} ,{passive:false});
-pad.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x;drag.x=e.clientX;if(mode==='aim'){AIM.f-=dx/14;AIM.d=((Math.round(AIM.f)%72)+72)%72;}});
+const ORB={yaw:0,pitch:.35,on:false};
+function orbReset(){ORB.yaw=0;ORB.pitch=.35;ORB.on=false;}
+pad.addEventListener('pointerdown',e=>{e.preventDefault();if(!e.isTrusted)return;ac();if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};try{pad.setPointerCapture(e.pointerId)}catch(_){}} ,{passive:false});
+pad.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(mode==='aim'){AIM.f-=dx/14;AIM.d=((Math.round(AIM.f)%72)+72)%72;}
+ else if(mode==='shot'||mode==='replay'){if(!ORB.on){const b=ball.position,v=camP.clone().sub(b);ORB.yaw=Math.atan2(v.x,v.z);ORB.pitch=clamp(Math.asin(clamp(v.y/(v.length()||1),-1,1)),-.2,1.2);ORB.on=true;}ORB.yaw-=dx*.012;ORB.pitch=clamp(ORB.pitch+dy*.008,-.2,1.2);}});
 const padEnd=e=>{if(drag&&e.pointerId===drag.id)drag=null;};pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
 addEventListener('contextmenu',e=>e.preventDefault());
 // クラブ
@@ -95,7 +107,7 @@ addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;
  else if(e.code==='Space')e.preventDefault();});
 addEventListener('keyup',e=>{if(e.code==='Space'&&mode==='aim'&&charge){const p=powerNow();charge=null;doShot(p);}});
 
-function bigText(s,sub){const b=$('big');b.innerHTML=s+(sub?'<small>'+sub+'</small>':'');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');}
+let bigTO=null;function bigText(s,sub,ms){const b=$('big');b.innerHTML=s+(sub?'<small>'+sub+'</small>':'');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');clearTimeout(bigTO);if(ms)bigTO=setTimeout(()=>{if(b.innerHTML.startsWith(s))b.innerHTML='';},ms);}
 function capText(s){const c=$('cap');if(c.textContent===s)return;c.textContent=s;c.classList.remove('pop');void c.offsetWidth;if(s)c.classList.add('pop');}
 const bubs={boss:$('bubBoss'),act:$('bubAct')};
 function bub(which,txt,pos,yOff){const el=bubs[which];if(!txt||!pos){el.hidden=true;return;}const p=pos.clone();p.y+=yOff||2.2;p.project(cam);
@@ -154,7 +166,7 @@ let swingT=-1;
 function doShot(p){
  if(mode!=='aim')return;
  AIM.p=p;mode='shot';setUI('shot');aimArrow.visible=false;swingT=0;SFX.swing();
- lastEvT=0;G.t0=performance.now();G.P0=SG.shot(AIM.c,AIM.d,p,0);G.in=AIM.c+'.'+AIM.d+'.'+p;G.P=null;G.wait=true;
+ orbReset();lastEvT=0;G.t0=performance.now();G.P0=SG.shot(AIM.c,AIM.d,p,0);G.in=AIM.c+'.'+AIM.d+'.'+p;G.P=null;G.wait=true;
  setTimeout(()=>SFX.hit(AIM.c),0);
  takeTicket(G.in).then(st=>{if(mode!=='shot'||G.P)return;const el=(performance.now()-G.t0)/1000;
   if(typeof st==='number'){const P=SG.shot(AIM.c,AIM.d,p,SG.seedOf(st));if(P.te>el+.03){G.st=st;useP(P);return;}}
@@ -165,7 +177,7 @@ function useP(P){G.P=P;G.wait=false;setPlan(P,{b:G.b});lastEvT=Math.min(lastEvT,
 function doBreak(){
  if(mode!=='shot'||G.b!=null)return;const el=(performance.now()-G.t0)/1000;
  if(G.P&&el>G.P.T-.3)return;
- G.b=el;if(G.P)G.P.o.b=el;SFX.snap();hb.classList.add('done');$('ctrl').hidden=true;
+ G.b=el;if(G.P)G.P.o.b=el;SFX.snap();hb.classList.add('done');$('ctrl').hidden=true;bigText(t('snapTxt'),null,1300);G.pipFirst=true;ORB.on=false;
 }
 let lastEvT=0;
 function playEv(P,t0,t1){for(const e of P.ev)if(e.t>t0&&e.t<=t1)(SFX[e.s]||(()=>{}))();
@@ -185,17 +197,19 @@ function shotFrame(dt,now){
  const P=G.P;if(G.b!=null)P.o.b=G.b;
  const out=sceneAt(P,ts);playEv(P,lastEvT,ts);lastEvT=ts;
  placeBoss(ts<P.T?'nervous':'freeze',now/1000,P);
- camForShot(P,ts,out,dt,1);camShake=out.shake||0;
+ const bv=breakView(P,ts,G.b);
+ if(bv)camGo(bv.pos,bv.look,dt,bv.pip&&ts>G.b+1.5?3:5);else camForShot(P,ts,out,dt,1);camShake=out.shake||0;
+ if(bv&&bv.pip){$('pip').hidden=false;$('pipLbl').hidden=false;$('pipLbl').textContent=t('pipLbl');pipFollow(P,ts,dt,G.pipFirst);G.pipFirst=false;G.pipOn=true;}else if(G.pipOn){$('pip').hidden=true;$('pipLbl').hidden=true;G.pipOn=false;}
  ballGlow.visible=ts<P.T;ballGlow.position.set(out.ball.x,.02,out.ball.z);ballGlow.scale.setScalar(1+Math.max(0,out.ball.y)*.05);
  $('hudTime').textContent=Math.min(ts,P.T).toFixed(2);
  const [rs,rb]=reasonTxt(P.ri);
  if(ts>=P.capT&&ts<P.T+1.5)capText(rs);else capText('');
- if(out.actVis&&ts>=P.capT&&ts<P.T)bub('act',rb,out.act,ACT&&ACT.kind==='veh'?2.8:ACT&&ACT.air?1.6:1.9);else bubs.act.hidden=true;
- if(ts<P.T){const i=Math.floor(ts/3.4);if(i!==idleI){idleI=i;}const il=t('idle');if(ts%3.4<2.4&&!(out.actVis&&ts>=P.capT))bub('boss',il[(i+P.ri)%il.length],boss.man.position);else bubs.boss.hidden=true;}
+ if(out.actVis&&ts>=P.capT&&ts<Math.min(P.T,P.capT+2.5)&&!bv)bub('act',rb,out.act,ACT&&ACT.kind==='veh'?2.8:ACT&&ACT.air?1.6:1.9);else bubs.act.hidden=true;
+ if(ts<P.T&&bossCut(P,ts)&&!bv&&!ORB.on){const il=t('idle');bub('boss',il[P.ri%il.length],boss.man.position);}else bubs.boss.hidden=true;
  if(ts>=P.T){
-  if(G.b!=null){if(ts>=P.T+.05&&!G.clinkShown){G.clinkShown=1;bigText(t('clink'));}if(ts>=P.T+1.4&&!G.pondShown){G.pondShown=1;bigText(t('pond'));sendYuzu();}
+  if(G.b!=null){if(ts>=P.T+.05&&!G.clinkShown){G.clinkShown=1;bigText(t('clink'),null,1300);}if(ts>=P.T+1.4&&!G.pondShown){G.pondShown=1;bigText(t('pond'));sendYuzu();}
    if(ts>=P.T+2.6)startMV();}
-  else{G.res={kind:'win',ms:P.ms,ri:P.ri};markSeen(P.ri);submit();mode='after';G.afterT=0;$('ctrl').hidden=true;SFX.cup();bigText(t('cupIn'));}
+  else{$('pip').hidden=true;$('pipLbl').hidden=true;G.res={kind:'win',ms:P.ms,ri:P.ri};markSeen(P.ri);submit();mode='after';G.afterT=0;$('ctrl').hidden=true;SFX.cup();bigText(t('cupIn'));}
  }
 }
 // ---- 入ってしまったあと ----
@@ -212,7 +226,7 @@ function afterFrame(dt,now){
 // ---- 部長のMV ----
 let CONF=[];
 function startMV(){
- mode='mv';G.mvT=0;setUI('mv');$('hud').hidden=true;capText('');hideBubs();$('big').innerHTML='';
+ mode='mv';G.mvT=0;setUI('mv');$('pip').hidden=true;$('pipLbl').hidden=true;G.pipOn=false;$('hud').hidden=true;capText('');hideBubs();$('big').innerHTML='';
  G.res={kind:'yuzu',ri:G.P.ri};markSeen(G.P.ri);
  const n=ls.get('sg_mvseen',0);$('skipBtn').hidden=!n;$('skipBtn').textContent=t('skip');ls.set('sg_mvseen',n+1);
  mvMusic();SFX.fanfare();
@@ -225,7 +239,7 @@ function mvFrame(dt,now){
  const a=k*.5;camGo(V3(BOSS.x+Math.sin(a)*4.2,1.6+Math.sin(k*1.7)*.4,BOSS.z+Math.cos(a)*4.2),V3(BOSS.x,1.1,BOSS.z),dt,3);
  for(const c of CONF){c.y-=c.v*dt*1.6;if(c.y<0)c.y=5;c.m.position.set(c.x+Math.sin(k*2+c.r)*.3,c.y,c.z);c.m.rotation.set(k*3+c.r,k*2,c.r);}
  const msg=k<3?t('mvA'):k<6?t('mvB'):t('mvC');if($('big').dataset.m!==msg){$('big').dataset.m=msg;bigText(msg);}
- bub('boss',k%2<1?t('mvLaugh'):'♪',boss.man.position,2.4);
+ if(k>1&&k<3.2)bub('boss',t('mvLaugh'),boss.man.position,2.4);else bubs.boss.hidden=true;
  if(k>9)endMV();
 }
 // ---- クビ ----

@@ -31,12 +31,14 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family
 #hudTime{font-size:38px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 2px 0 #0006,0 0 8px #0005;line-height:1.1}
 #hudBest{font-size:11px;color:#fffe;text-shadow:0 1px 2px #0009;font-variant-numeric:tabular-nums}
 #ff{display:inline-block;margin-top:4px;background:#000a;color:#ffdd55;font-weight:900;font-size:14px;padding:3px 10px;border-radius:99px}
-#cap{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 92px);text-align:center;z-index:4;pointer-events:none;font-size:17px;font-weight:900;color:#fff;text-shadow:0 2px 0 #000a,0 0 8px #0008;line-height:1.35}
+#cap{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 92px);text-align:center;z-index:4;pointer-events:none;font-size:19px;font-weight:900;color:#fff;text-shadow:0 2px 0 #000a,0 0 8px #0008;line-height:1.35}
 #cap.pop{animation:pop .45s ease-out}
 #big{position:fixed;left:0;right:0;top:36%;text-align:center;font-size:50px;font-weight:900;color:#fff;text-shadow:0 4px 0 #0006,0 0 14px #0007;z-index:7;pointer-events:none;line-height:1.15;padding:0 10px}
 #big small{display:block;font-size:20px;margin-top:6px}
 #big.pop{animation:pop .5s ease-out}
 @keyframes pop{0%{transform:scale(1.6);opacity:0}60%{transform:scale(.95);opacity:1}100%{transform:scale(1)}}
+#pip{position:fixed;left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 132px);width:132px;height:132px;border-radius:50%;border:4px solid #fff;box-shadow:0 3px 10px #0006;z-index:5;background:#9fd3f5;pointer-events:none}
+#pipLbl{position:fixed;left:calc(env(safe-area-inset-left,0px) + 6px);top:calc(env(safe-area-inset-top,0px) + 272px);width:140px;text-align:center;z-index:5;font-weight:900;font-size:12px;color:#fff;text-shadow:0 1px 2px #000c;pointer-events:none}
 #freeze{position:fixed;inset:0;pointer-events:none;z-index:2;background:#2a5a9a;opacity:0;transition:opacity .6s}
 .bub{position:fixed;z-index:5;pointer-events:none;transform:translate(-50%,-100%);background:#fff;border:3px solid #1d1d1d;border-radius:14px;padding:4px 10px;font-weight:900;font-size:15px;white-space:nowrap;box-shadow:0 3px 0 #0003}
 .bub:after{content:'';position:absolute;left:50%;bottom:-11px;margin-left:-7px;border:7px solid transparent;border-top-color:#1d1d1d}
@@ -99,6 +101,7 @@ table.rank tr.top td{background:#e6f7ea;font-weight:900}
 <body>
 <canvas id="c"></canvas>
 <div id="freeze"></div>
+<canvas id="pip" width="264" height="264" hidden></canvas><div id="pipLbl" hidden></div>
 <div id="pad"></div>
 <div id="hud" hidden><div id="hudTitle"></div><div id="hudTime">0.00</div><div id="hudBest"></div><div id="ff" hidden></div></div>
 <div id="cap"></div>
@@ -200,7 +203,7 @@ ja:{title:'<em>接待</em>ゴルフ<small>上司を勝たせろ</small>',hud:'�
  yuzuHead:'上司に勝ちを譲った',yuzuBig:'接待成功',yuzuNote:'部長はたいへんご機嫌だ。',yuzuCount:'譲った人 {n}人',
  mvA:'部長の勝ち！',mvB:'ナイスです、部長！',mvC:'さすがです！',pond:'池ポチャ',clink:'カキーン',
  kubiHead:'クビ',kubiBig:'懲戒解雇',kubiNote:'上司にボールを投げて、クビになった。',kubiBub:'クビだ！！',
- post:'接待ゴルフで {s}秒 ねばったけど、上司に勝ってしまった\n称号「{g}」',postYuzu:'上司に勝ちを譲りました。',postKubi:'上司にボールを投げて、クビになりました。',maxd:'最大 約{m}m',mvLaugh:'ワッハッハ',seen:'見た理由 {n}／{m}',kubiCount:'クビになった人 {n}人',tags:'#接待ゴルフ'},
+ post:'接待ゴルフで {s}秒 ねばったけど、上司に勝ってしまった\n称号「{g}」',postYuzu:'上司に勝ちを譲りました。',postKubi:'上司にボールを投げて、クビになりました。',maxd:'最大 約{m}m',snapTxt:'バキッ',pipLbl:'いまのボール',mvLaugh:'ワッハッハ',seen:'見た理由 {n}／{m}',kubiCount:'クビになった人 {n}人',tags:'#接待ゴルフ'},
 en:{title:'<em>Let the Boss</em> Win<small>a golf game</small>',hud:'Let the Boss Win',
  how:'The final hole. Your boss\'s putt stopped on the lip.<br>If you sink yours, you win — and that\'s bad. <b>But no matter how you hit it, it goes in.</b><br>The longer it takes to go in, the higher you rank.',
  ctl:'Pick a club at the top, drag left/right to aim, hold the right button and release to hit',
@@ -222,7 +225,7 @@ en:{title:'<em>Let the Boss</em> Win<small>a golf game</small>',hud:'Let the Bos
  yuzuHead:'You let the boss win',yuzuBig:'Mission complete',yuzuNote:'The boss is in a great mood.',yuzuCount:'{n} people let him win',
  mvA:'The boss wins!',mvB:'Nice one, boss!',mvC:'Amazing, sir!',pond:'SPLASH',clink:'CLINK',
  kubiHead:'FIRED',kubiBig:'You\'re fired',kubiNote:'You threw the ball at your boss. You\'re fired.',kubiBub:'YOU\'RE FIRED!!',
- post:'I stalled {s}s in corporate golf, but still beat my boss\nTitle: "{g}"',postYuzu:'I let my boss win.',postKubi:'I threw the ball at my boss and got fired.',maxd:'Max ≈{m}m',mvLaugh:'HA HA HA',seen:'Reasons seen {n}／{m}',kubiCount:'{n} people fired',tags:'#接待ゴルフ'},
+ post:'I stalled {s}s in corporate golf, but still beat my boss\nTitle: "{g}"',postYuzu:'I let my boss win.',postKubi:'I threw the ball at my boss and got fired.',maxd:'Max ≈{m}m',snapTxt:'SNAP!',pipLbl:'Your ball now',mvLaugh:'HA HA HA',seen:'Reasons seen {n}／{m}',kubiCount:'{n} people fired',tags:'#接待ゴルフ'},
 zh:{title:'<em>接待</em>高爾夫<small>讓上司贏</small>',hud:'接待高爾夫',
  how:'最後一洞。部長的推桿停在洞口邊。<br>你要是進了，就贏了。<b>但是不管怎麼打，都會進。</b><br>進洞前的時間越長排名越高。看你能拖多久。',
  ctl:'上面選球桿・左右滑動畫面調整方向・長按右邊的按鈕放開就擊球',
@@ -244,7 +247,7 @@ zh:{title:'<em>接待</em>高爾夫<small>讓上司贏</small>',hud:'接待高�
  yuzuHead:'讓上司贏了',yuzuBig:'接待成功',yuzuNote:'部長心情大好。',yuzuCount:'讓了的人 {n}人',
  mvA:'部長贏了！',mvB:'部長好球！',mvC:'不愧是部長！',pond:'掉進池裡',clink:'鏘',
  kubiHead:'開除',kubiBig:'懲戒解僱',kubiNote:'把球丟向上司，被開除了。',kubiBub:'你被開除了！！',
- post:'在接待高爾夫拖了 {s}秒，還是不小心贏了上司\n稱號「{g}」',postYuzu:'我讓上司贏了。',postKubi:'我把球丟向上司，被開除了。',maxd:'最遠 約{m}m',mvLaugh:'哇哈哈',seen:'看過的理由 {n}／{m}',kubiCount:'被開除的人 {n}人',tags:'#接待ゴルフ'},
+ post:'在接待高爾夫拖了 {s}秒，還是不小心贏了上司\n稱號「{g}」',postYuzu:'我讓上司贏了。',postKubi:'我把球丟向上司，被開除了。',maxd:'最遠 約{m}m',snapTxt:'啪嚓',pipLbl:'現在的球',mvLaugh:'哇哈哈',seen:'看過的理由 {n}／{m}',kubiCount:'被開除的人 {n}人',tags:'#接待ゴルフ'},
 ko:{title:'<em>접대</em> 골프<small>상사를 이기게 하라</small>',hud:'접대 골프',
  how:'마지막 홀. 부장님의 퍼트는 홀컵 가장자리에서 멈췄다.<br>당신이 넣으면 이겨 버린다. <b>그런데 어떻게 쳐도 들어가 버린다.</b><br>들어갈 때까지 오래 걸릴수록 순위가 높다. 얼마나 버틸 수 있을까.',
  ctl:'위에서 클럽 선택・화면을 좌우로 문질러 방향 조절・오른쪽 버튼을 길게 눌렀다 떼면 샷',
@@ -266,7 +269,7 @@ ko:{title:'<em>접대</em> 골프<small>상사를 이기게 하라</small>',hud:
  yuzuHead:'상사에게 승리를 양보했다',yuzuBig:'접대 성공',yuzuNote:'부장님 기분이 아주 좋다.',yuzuCount:'양보한 사람 {n}명',
  mvA:'부장님 승리!',mvB:'나이스 샷, 부장님!',mvC:'역시 부장님!',pond:'퐁당',clink:'깡',
  kubiHead:'해고',kubiBig:'징계 해고',kubiNote:'상사에게 공을 던져서 해고당했다.',kubiBub:'자넨 해고야!!',
- post:'접대 골프에서 {s}초 버텼지만 상사를 이겨 버렸다\n칭호 "{g}"',postYuzu:'상사에게 승리를 양보했습니다.',postKubi:'상사에게 공을 던져서 해고당했습니다.',maxd:'최대 약 {m}m',mvLaugh:'와하하',seen:'본 이유 {n}／{m}',kubiCount:'해고된 사람 {n}명',tags:'#接待ゴルフ'}};
+ post:'접대 골프에서 {s}초 버텼지만 상사를 이겨 버렸다\n칭호 "{g}"',postYuzu:'상사에게 승리를 양보했습니다.',postKubi:'상사에게 공을 던져서 해고당했습니다.',maxd:'최대 약 {m}m',snapTxt:'뚝',pipLbl:'지금 공',mvLaugh:'와하하',seen:'본 이유 {n}／{m}',kubiCount:'해고된 사람 {n}명',tags:'#接待ゴルフ'}};
 const LANGS=[['ja','日本語'],['en','English'],['zh','繁中'],['ko','한국어']];
 let lang=(q=>['ja','en','zh','ko'].includes(q)?q:null)(new URLSearchParams(location.search).get('lang'))||ls.get('sg_lang',null)||(n=>n.startsWith('ja')?'ja':n.startsWith('zh')?'zh':n.startsWith('ko')?'ko':'en')((navigator.language||'ja').toLowerCase());
 const LI={ja:5,en:6,zh:7,ko:8};
@@ -328,6 +331,9 @@ R3.setPixelRatio(Math.min(devicePixelRatio,2));
 const S3=new THREE.Scene();
 const SKY=0x9fd3f5;S3.background=new THREE.Color(SKY);S3.fog=new THREE.Fog(SKY,120,700);
 const cam=new THREE.PerspectiveCamera(50,1,.05,1500);
+// 左上の丸い小窓（クラブを折ったあと、いまのボールを映す）
+let pipR=null;const pipCam=new THREE.PerspectiveCamera(55,1,.05,1500);const pipP=new THREE.Vector3(),pipL=new THREE.Vector3();
+function pipRenderer(){if(!pipR){pipR=new THREE.WebGLRenderer({canvas:document.getElementById('pip'),antialias:true,preserveDrawingBuffer:true});pipR.setPixelRatio(1);pipR.setSize(264,264,false);}return pipR;}
 S3.add(new THREE.HemisphereLight(0xffffff,0x5a7a3a,1.15));
 const sun=new THREE.DirectionalLight(0xffffff,1.25);sun.position.set(-30,60,20);S3.add(sun);
 const LAM=c=>new THREE.MeshLambertMaterial({color:c});
@@ -724,7 +730,7 @@ function placeMe(dx,dz,swing,brk){
  const a=swing==null?0:swing;
  me.armL.rotation.x=me.armR.rotation.x=-.35;me.armL.rotation.z=me.armR.rotation.z=a;me.hip.rotation.x=.25;me.neck.rotation.x=.3;
  club.visible=true;clubHead.visible=!brk;
- if(brk){me.armL.rotation.z=-.6;me.armR.rotation.z=.6;me.legR.rotation.x=-.9;me.armL.rotation.x=me.armR.rotation.x=-.9;}
+ if(brk){me.armL.rotation.z=-.5;me.armR.rotation.z=.5;me.legR.rotation.x=-1.2;me.armL.rotation.x=me.armR.rotation.x=-1.1;me.hip.rotation.x=.35;}
 }
 function placeBoss(mode,t,P){
  poseReset(boss);boss.M.color.setHex(mode==='angry'?0xc8302a:0x23315a);
@@ -759,17 +765,26 @@ function camSnap(pos,look){camP.copy(pos);camL.copy(look);}
 function camApply(){cam.position.copy(camP);if(camShake>0){cam.position.x+=(Math.random()-.5)*camShake;cam.position.y+=(Math.random()-.5)*camShake;}cam.lookAt(camL);}
 function camForShot(P,t,out,dt,spd){
  const b=out.ball,C=out.cup;const db=Math.hypot(b.x-C.x,b.z-C.z);
+ if(ORB.on&&t<P.T+.2){const d=7+Math.min(10,Math.max(0,b.y)*.35),cp=Math.cos(ORB.pitch);camGo(V3(b.x+Math.sin(ORB.yaw)*cp*d,Math.max(.4,b.y+Math.sin(ORB.pitch)*d+.4),b.z+Math.cos(ORB.yaw)*cp*d),V3(b.x,b.y,b.z),dt,10);return;}
  if(t>=P.T-2.2&&db<14||t>=P.T){camGo(V3(C.x+3.2,2.3,C.z+5.6),V3(C.x+.4,.3,C.z-.2),dt*spd,3);return;}
  if(out.phase==='fly'){const D=aimDir();const h=Math.max(0,b.y);camGo(V3(b.x-D[0]*7,b.y+3+h*.15,b.z-D[1]*7),V3(b.x,b.y,b.z),dt*spd,4);return;}
  // 長く何も起きない間は、そわそわする部長を映す
- const sg=t>=P.te&&t<P.T?segOf(P,t):null;
- if(sg&&sg.k==='wait'&&sg.s.d>3&&sg.u>.3&&sg.u<.72){camGo(V3(BOSS.x+1.3,1.75,BOSS.z+3.1),V3(BOSS.x,1.25,BOSS.z),dt*spd,14);return;}
+ if(bossCut(P,t)){camGo(V3(BOSS.x+1.3,1.75,BOSS.z+3.1),V3(BOSS.x,1.25,BOSS.z),dt*spd,14);return;}
  let fx=b.x-C.x,fz=b.z-C.z,L=Math.hypot(fx,fz);if(L<1){fx=0;fz=1;L=1;}fx/=L;fz/=L;
  const look=db<12?V3(lerp(b.x,C.x,.35),Math.max(0,b.y)*.8,lerp(b.z,C.z,.35)):V3(b.x,Math.max(0,b.y),b.z);
  const k=7+Math.min(10,Math.max(0,b.y)*.35);
  camGo(V3(b.x+fx*k+fz*2.5,Math.max(2.6,b.y*.7+3),b.z+fz*k-fx*2.5),look,dt*spd,3);
 }
 
+function bossCut(P,t){const sg=t>=P.te&&t<P.T?segOf(P,t):null;return !!(sg&&sg.k==='wait'&&sg.s.d>3&&sg.u>.3&&sg.u<.72);}
+// クラブを折った場面：折った瞬間から先っぽがカップに入るまでを大きく映し、ボールは左上の小窓に映す
+function breakView(P,t,b){if(b==null||t<b)return null;const hd=Math.min(.9,Math.max(.15,P.T-b-.15));const C=cupPos(P,t);const bp=ball.position;const near=Math.hypot(bp.x-C.x,bp.z-C.z)<12||t>P.T-2.2;
+ if(t>=P.T)return null;
+ if(t<b+hd+1.1)return {pos:V3(.9,2.3,3.4),look:V3(0,.35,-4.2),pip:!near};
+ if(!near)return {pos:V3(C.x+2.3,1.5,C.z+3.3),look:V3(C.x,.15,C.z),pip:true};return null;}
+function pipFollow(P,t,dt,first){const b=ball.position,C=cupPos(P,t);let fx=b.x-C.x,fz=b.z-C.z,L=Math.hypot(fx,fz)||1;fx/=L;fz/=L;const k=6+Math.min(8,Math.max(0,b.y)*.3);
+ const pos=V3(b.x+fx*k,Math.max(2,b.y+2.2),b.z+fz*k);if(first){pipP.copy(pos);pipL.copy(b);}else{const a=1-Math.exp(-dt*4);pipP.lerp(pos,a);pipL.lerp(b,a);}pipCam.position.copy(pipP);pipCam.lookAt(pipL);}
+function pipDraw(){const r=pipRenderer();const d=pipCam.position.distanceTo(ball.position);const keep=ball.scale.x;ball.scale.setScalar(Math.max(.06,d*.01)*ballShrink);r.render(S3,pipCam);ball.scale.setScalar(keep);}
 // ===== 遊び =====
 let mode='title';
 const G={};
@@ -780,8 +795,11 @@ let charge=null;
 function powerNow(){if(!charge)return 0;const ph=((performance.now()-charge.t0)/850)%2;return Math.round((ph<1?ph:2-ph)*100);}
 // 入力：画面をなぞって向き
 const pad=$('pad');let drag=null;
-pad.addEventListener('pointerdown',e=>{e.preventDefault();if(!e.isTrusted)return;ac();if(drag)return;drag={id:e.pointerId,x:e.clientX};try{pad.setPointerCapture(e.pointerId)}catch(_){}} ,{passive:false});
-pad.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x;drag.x=e.clientX;if(mode==='aim'){AIM.f-=dx/14;AIM.d=((Math.round(AIM.f)%72)+72)%72;}});
+const ORB={yaw:0,pitch:.35,on:false};
+function orbReset(){ORB.yaw=0;ORB.pitch=.35;ORB.on=false;}
+pad.addEventListener('pointerdown',e=>{e.preventDefault();if(!e.isTrusted)return;ac();if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};try{pad.setPointerCapture(e.pointerId)}catch(_){}} ,{passive:false});
+pad.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(mode==='aim'){AIM.f-=dx/14;AIM.d=((Math.round(AIM.f)%72)+72)%72;}
+ else if(mode==='shot'||mode==='replay'){if(!ORB.on){const b=ball.position,v=camP.clone().sub(b);ORB.yaw=Math.atan2(v.x,v.z);ORB.pitch=clamp(Math.asin(clamp(v.y/(v.length()||1),-1,1)),-.2,1.2);ORB.on=true;}ORB.yaw-=dx*.012;ORB.pitch=clamp(ORB.pitch+dy*.008,-.2,1.2);}});
 const padEnd=e=>{if(drag&&e.pointerId===drag.id)drag=null;};pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
 addEventListener('contextmenu',e=>e.preventDefault());
 // クラブ
@@ -810,7 +828,7 @@ addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;
  else if(e.code==='Space')e.preventDefault();});
 addEventListener('keyup',e=>{if(e.code==='Space'&&mode==='aim'&&charge){const p=powerNow();charge=null;doShot(p);}});
 
-function bigText(s,sub){const b=$('big');b.innerHTML=s+(sub?'<small>'+sub+'</small>':'');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');}
+let bigTO=null;function bigText(s,sub,ms){const b=$('big');b.innerHTML=s+(sub?'<small>'+sub+'</small>':'');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');clearTimeout(bigTO);if(ms)bigTO=setTimeout(()=>{if(b.innerHTML.startsWith(s))b.innerHTML='';},ms);}
 function capText(s){const c=$('cap');if(c.textContent===s)return;c.textContent=s;c.classList.remove('pop');void c.offsetWidth;if(s)c.classList.add('pop');}
 const bubs={boss:$('bubBoss'),act:$('bubAct')};
 function bub(which,txt,pos,yOff){const el=bubs[which];if(!txt||!pos){el.hidden=true;return;}const p=pos.clone();p.y+=yOff||2.2;p.project(cam);
@@ -869,7 +887,7 @@ let swingT=-1;
 function doShot(p){
  if(mode!=='aim')return;
  AIM.p=p;mode='shot';setUI('shot');aimArrow.visible=false;swingT=0;SFX.swing();
- lastEvT=0;G.t0=performance.now();G.P0=SG.shot(AIM.c,AIM.d,p,0);G.in=AIM.c+'.'+AIM.d+'.'+p;G.P=null;G.wait=true;
+ orbReset();lastEvT=0;G.t0=performance.now();G.P0=SG.shot(AIM.c,AIM.d,p,0);G.in=AIM.c+'.'+AIM.d+'.'+p;G.P=null;G.wait=true;
  setTimeout(()=>SFX.hit(AIM.c),0);
  takeTicket(G.in).then(st=>{if(mode!=='shot'||G.P)return;const el=(performance.now()-G.t0)/1000;
   if(typeof st==='number'){const P=SG.shot(AIM.c,AIM.d,p,SG.seedOf(st));if(P.te>el+.03){G.st=st;useP(P);return;}}
@@ -880,7 +898,7 @@ function useP(P){G.P=P;G.wait=false;setPlan(P,{b:G.b});lastEvT=Math.min(lastEvT,
 function doBreak(){
  if(mode!=='shot'||G.b!=null)return;const el=(performance.now()-G.t0)/1000;
  if(G.P&&el>G.P.T-.3)return;
- G.b=el;if(G.P)G.P.o.b=el;SFX.snap();hb.classList.add('done');$('ctrl').hidden=true;
+ G.b=el;if(G.P)G.P.o.b=el;SFX.snap();hb.classList.add('done');$('ctrl').hidden=true;bigText(t('snapTxt'),null,1300);G.pipFirst=true;ORB.on=false;
 }
 let lastEvT=0;
 function playEv(P,t0,t1){for(const e of P.ev)if(e.t>t0&&e.t<=t1)(SFX[e.s]||(()=>{}))();
@@ -900,17 +918,19 @@ function shotFrame(dt,now){
  const P=G.P;if(G.b!=null)P.o.b=G.b;
  const out=sceneAt(P,ts);playEv(P,lastEvT,ts);lastEvT=ts;
  placeBoss(ts<P.T?'nervous':'freeze',now/1000,P);
- camForShot(P,ts,out,dt,1);camShake=out.shake||0;
+ const bv=breakView(P,ts,G.b);
+ if(bv)camGo(bv.pos,bv.look,dt,bv.pip&&ts>G.b+1.5?3:5);else camForShot(P,ts,out,dt,1);camShake=out.shake||0;
+ if(bv&&bv.pip){$('pip').hidden=false;$('pipLbl').hidden=false;$('pipLbl').textContent=t('pipLbl');pipFollow(P,ts,dt,G.pipFirst);G.pipFirst=false;G.pipOn=true;}else if(G.pipOn){$('pip').hidden=true;$('pipLbl').hidden=true;G.pipOn=false;}
  ballGlow.visible=ts<P.T;ballGlow.position.set(out.ball.x,.02,out.ball.z);ballGlow.scale.setScalar(1+Math.max(0,out.ball.y)*.05);
  $('hudTime').textContent=Math.min(ts,P.T).toFixed(2);
  const [rs,rb]=reasonTxt(P.ri);
  if(ts>=P.capT&&ts<P.T+1.5)capText(rs);else capText('');
- if(out.actVis&&ts>=P.capT&&ts<P.T)bub('act',rb,out.act,ACT&&ACT.kind==='veh'?2.8:ACT&&ACT.air?1.6:1.9);else bubs.act.hidden=true;
- if(ts<P.T){const i=Math.floor(ts/3.4);if(i!==idleI){idleI=i;}const il=t('idle');if(ts%3.4<2.4&&!(out.actVis&&ts>=P.capT))bub('boss',il[(i+P.ri)%il.length],boss.man.position);else bubs.boss.hidden=true;}
+ if(out.actVis&&ts>=P.capT&&ts<Math.min(P.T,P.capT+2.5)&&!bv)bub('act',rb,out.act,ACT&&ACT.kind==='veh'?2.8:ACT&&ACT.air?1.6:1.9);else bubs.act.hidden=true;
+ if(ts<P.T&&bossCut(P,ts)&&!bv&&!ORB.on){const il=t('idle');bub('boss',il[P.ri%il.length],boss.man.position);}else bubs.boss.hidden=true;
  if(ts>=P.T){
-  if(G.b!=null){if(ts>=P.T+.05&&!G.clinkShown){G.clinkShown=1;bigText(t('clink'));}if(ts>=P.T+1.4&&!G.pondShown){G.pondShown=1;bigText(t('pond'));sendYuzu();}
+  if(G.b!=null){if(ts>=P.T+.05&&!G.clinkShown){G.clinkShown=1;bigText(t('clink'),null,1300);}if(ts>=P.T+1.4&&!G.pondShown){G.pondShown=1;bigText(t('pond'));sendYuzu();}
    if(ts>=P.T+2.6)startMV();}
-  else{G.res={kind:'win',ms:P.ms,ri:P.ri};markSeen(P.ri);submit();mode='after';G.afterT=0;$('ctrl').hidden=true;SFX.cup();bigText(t('cupIn'));}
+  else{$('pip').hidden=true;$('pipLbl').hidden=true;G.res={kind:'win',ms:P.ms,ri:P.ri};markSeen(P.ri);submit();mode='after';G.afterT=0;$('ctrl').hidden=true;SFX.cup();bigText(t('cupIn'));}
  }
 }
 // ---- 入ってしまったあと ----
@@ -927,7 +947,7 @@ function afterFrame(dt,now){
 // ---- 部長のMV ----
 let CONF=[];
 function startMV(){
- mode='mv';G.mvT=0;setUI('mv');$('hud').hidden=true;capText('');hideBubs();$('big').innerHTML='';
+ mode='mv';G.mvT=0;setUI('mv');$('pip').hidden=true;$('pipLbl').hidden=true;G.pipOn=false;$('hud').hidden=true;capText('');hideBubs();$('big').innerHTML='';
  G.res={kind:'yuzu',ri:G.P.ri};markSeen(G.P.ri);
  const n=ls.get('sg_mvseen',0);$('skipBtn').hidden=!n;$('skipBtn').textContent=t('skip');ls.set('sg_mvseen',n+1);
  mvMusic();SFX.fanfare();
@@ -940,7 +960,7 @@ function mvFrame(dt,now){
  const a=k*.5;camGo(V3(BOSS.x+Math.sin(a)*4.2,1.6+Math.sin(k*1.7)*.4,BOSS.z+Math.cos(a)*4.2),V3(BOSS.x,1.1,BOSS.z),dt,3);
  for(const c of CONF){c.y-=c.v*dt*1.6;if(c.y<0)c.y=5;c.m.position.set(c.x+Math.sin(k*2+c.r)*.3,c.y,c.z);c.m.rotation.set(k*3+c.r,k*2,c.r);}
  const msg=k<3?t('mvA'):k<6?t('mvB'):t('mvC');if($('big').dataset.m!==msg){$('big').dataset.m=msg;bigText(msg);}
- bub('boss',k%2<1?t('mvLaugh'):'♪',boss.man.position,2.4);
+ if(k>1&&k<3.2)bub('boss',t('mvLaugh'),boss.man.position,2.4);else bubs.boss.hidden=true;
  if(k>9)endMV();
 }
 // ---- クビ ----
@@ -998,6 +1018,7 @@ $('rankBack').onclick=()=>{if(rankFrom)show('result');else showTitle();};
 $('tabDay').onclick=()=>openRank('d',rankFrom);$('tabAll').onclick=()=>openRank('all',rankFrom);
 function myName(){return ls.get('sg_name','')||t('anon');}
 function showResult(){
+ $('pip').hidden=true;$('pipLbl').hidden=true;
  show('result');setUI('result');$('hud').hidden=true;$('big').innerHTML='';capText('');hideBubs();const r=G.res;
  $('rName').hidden=true;$('renameBtn').hidden=true;const sc=t('seen',{n:seenCount(),m:SG.R.length});
  if(r.kind==='yuzu'){
@@ -1116,19 +1137,21 @@ async function openRank(board,fromResult){
 $('rankBox').onclick=e=>{const b=e.target.closest('button[data-i]');if(!b)return;startReplay(rankRows[+b.dataset.i]);};
 
 // ===== 再生（途中は早送り） =====
-// 打ってから3秒はふつう → 入る6秒前まで早送り → 最後はふつう
-function playClock(T,real){const a=3,bEnd=Math.max(a,T-6),ffLen=Math.max(0,bEnd-a),ffDur=Math.min(ffLen,Math.max(2,ffLen/6));
- if(real<a)return {t:real,ff:false};if(real<a+ffDur)return {t:a+(real-a)*(ffLen/Math.max(1e-6,ffDur)),ff:ffLen>0};return {t:bEnd+(real-a-ffDur),ff:false};}
-function playLen(T){const a=3,ffLen=Math.max(0,Math.max(a,T-6)-a);return a+Math.min(ffLen,Math.max(2,ffLen/6))+(T-Math.max(a,T-6));}
+// ふつうの速さで見せる所（打った直後・折った瞬間・入る前）以外は早送りにする
+function makeClock(T,b){let K=[[0,3],[Math.max(0,T-6),T]];if(b!=null)K.push([Math.max(0,b-.5),Math.min(T,b+2.6)]);K.sort((x,y)=>x[0]-y[0]);const M=[];for(const k of K){if(M.length&&k[0]<=M[M.length-1][1])M[M.length-1][1]=Math.max(M[M.length-1][1],k[1]);else M.push(k.slice());}
+ const S=[];let pos=0;for(let i=0;i<M.length;i++){if(i>0){const g0=M[i-1][1],g1=M[i][0];if(g1>g0){const d=Math.min(g1-g0,Math.max(1,(g1-g0)/6));S.push({r0:pos,r1:pos+d,t0:g0,t1:g1,ff:true});pos+=d;}}S.push({r0:pos,r1:pos+(M[i][1]-M[i][0]),t0:M[i][0],t1:M[i][1],ff:false});pos+=M[i][1]-M[i][0];}
+ return {len:pos,at(r){for(const x of S)if(r<x.r1)return {t:x.t0+(x.t1-x.t0)*Math.max(0,r-x.r0)/Math.max(1e-6,x.r1-x.r0),ff:x.ff};return {t:T+(r-pos),ff:false};}};}
+function playClock(T,real){return makeClock(T,null).at(real);}
+function playLen(T){return makeClock(T,null).len;}
 let RP=null;
 function startReplay(rec){
  const o=SG.parseIn(rec.in);if(!o)return;const P=SG.shot(o.c,o.d,o.p,SG.seedOf(rec.st));
  show(null);clearActors();newRun();mode='replay';setUI('replay');$('replayBar').hidden=false;$('replayTxt').textContent=t('replaying',{n:rec.n})+'  '+fmt(rec.s)+t('sec');
- AIM.c=o.c;AIM.d=o.d;AIM.p=o.p;setPlan(P,{});RP={P,real:0,last:0};
+ AIM.c=o.c;AIM.d=o.d;AIM.p=o.p;setPlan(P,{});RP={P,real:0,last:0};orbReset();
 }
 function replayFrame(dt,now){
- RP.real+=dt;const P=RP.P;const end=playLen(P.T)+1.5;if(RP.real>end){RP.real=0;RP.last=0;}
- const c=playClock(P.T,RP.real),tt=Math.min(c.t,P.T+1.5);
+ RP.real+=dt;const P=RP.P;if(!RP.ck)RP.ck=makeClock(P.T,null);const end=RP.ck.len+1.5;if(RP.real>end){RP.real=0;RP.last=0;}
+ const c=RP.ck.at(RP.real),tt=Math.min(c.t,P.T+1.5);
  const out=sceneAt(P,tt);if(tt>RP.last)playEv(P,RP.last,tt);const spd=c.ff?(tt-RP.last)/Math.max(1e-4,dt):1;RP.last=tt;
  const D=SG.DIR[P.d];placeMe(D[0],D[1],tt<.25?lerp(-.3-(P.p/100)*2,1.9,tt/.25):1.9,false);placeBoss(tt<P.T?'nervous':'freeze',now/1000,P);
  camForShot(P,tt,out,dt,Math.max(1,spd));$('hudTime').textContent=Math.min(tt,P.T).toFixed(2);$('ff').hidden=!c.ff;
@@ -1161,9 +1184,10 @@ async function makeVideo(){
  const chunks=[];rec.ondataavailable=ev=>{if(ev.data&&ev.data.size)chunks.push(ev.data);};
  const kind=r.kind,P=G.P,b=G.b;
  if(kind!=='kubi')setPlan(P,{b:kind==='yuzu'?b:null});
- const L1=kind==='kubi'?0:playLen(P.T)+(kind==='yuzu'?2.6:0),L2=kind==='win'?3:kind==='yuzu'?3.5:3.6;
+ const CK=kind==='kubi'?null:makeClock(P.T,kind==='yuzu'?b:null);
+ const L1=kind==='kubi'?0:CK.len+(kind==='yuzu'?2.6:0),L2=kind==='win'?3:kind==='yuzu'?3.5:3.6;let pipFirst=true;
  const done=new Promise(res=>{rec.onstop=res;});rec.start(200);
- let real=0,last=-1,lastF=performance.now(),fired={};const D=SG.DIR[AIM.d];
+ let real=0,last=-1,lastF=performance.now(),fired={},vPip=false,snapT=false;const D=SG.DIR[AIM.d];
  if(kind!=='kubi'){camSnap(V3(-D[0]*6.2,2.9,-D[1]*6.2),V3(D[0]*7,.4,D[1]*7));}else camSnap(V3(BOSS.x+2.2,1.9,BOSS.z+4.8),V3(BOSS.x-.5,1.15,BOSS.z+.9));
  const conf=[];
  await new Promise(resolve=>{
@@ -1171,25 +1195,31 @@ async function makeVideo(){
    const dt=Math.min(.05,(now-lastF)/1000);lastF=now;real+=dt;
    g.clearRect(0,0,VW,VH);let cap='',ff=false,timer=null,endTxt=null,sub=null,bubB=null,bubA=null;
    if(kind==='kubi'){G.kubiT=real-dt;kubiFrame(dt,now);if(real>1.2){bubB=t('kubiBub');endTxt=t('kubiHead');sub=t('kubiBig');}}
-   else if(real<L1){const c=playClock(P.T,Math.min(real,playLen(P.T)));let tt=real<=playLen(P.T)?c.t:P.T+(real-playLen(P.T));ff=c.ff;
+   else if(real<L1){const c=CK.at(Math.min(real,CK.len));let tt=real<=CK.len?c.t:P.T+(real-CK.len);ff=c.ff;
     const out=sceneAt(P,tt);if(last>=0&&tt>last)playEv(P,last,tt);const spd=ff?(tt-Math.max(0,last))/Math.max(1e-4,dt):1;last=tt;
     placeMe(D[0],D[1],kind==='yuzu'&&tt>=b?0:(tt<.25?lerp(-.3-(P.p/100)*2,1.9,tt/.25):1.9),kind==='yuzu'&&tt>=b);placeBoss(tt<P.T?'nervous':'freeze',now/1000,P);
-    camForShot(P,tt,out,dt,Math.max(1,spd));timer=Math.min(tt,P.T);
-    const [rs,rb]=reasonTxt(P.ri);if(tt>=P.capT)cap=rs;if(out.actVis&&tt>=P.capT&&tt<P.T)bubA=[rb,out.act];
+    const bv=kind==='yuzu'?breakView(P,tt,b):null;
+    if(bv)camGo(bv.pos,bv.look,dt*Math.max(1,spd),5);else camForShot(P,tt,out,dt,Math.max(1,spd));timer=Math.min(tt,P.T);
+    if(bv&&bv.pip){pipFollow(P,tt,dt*Math.max(1,spd),pipFirst);pipFirst=false;vPip=true;}else vPip=false;
+    if(kind==='yuzu'&&tt>=b&&tt<b+1)snapT=true;else snapT=false;
+    const [rs,rb]=reasonTxt(P.ri);if(tt>=P.capT)cap=rs;if(out.actVis&&tt>=P.capT&&tt<Math.min(P.T,P.capT+2.5)&&!bv)bubA=[rb,out.act];
     if(kind==='yuzu'&&tt>=P.T+.05)endTxt=tt>=P.T+1.4?t('pond'):t('clink');}
    else{const k=real-L1;
     if(kind==='win'){sceneAt(P,P.T+k);placeBoss('freeze',now/1000,P);camGo(V3(BOSS.x+1.4,1.9,BOSS.z+3.2),V3(BOSS.x,1.2,BOSS.z),dt,2.2);timer=P.T;if(k>.6){endTxt=fmt(P.ms)+t('sec');sub=t('ttl')+'「'+grade(P.ms)+'」';bubB=t('bossWin');}if(k>.6&&!fired.fz){fired.fz=1;SFX.freeze();}if(k>1.6&&!fired.cw){fired.cw=1;SFX.caw();}}
     else{if(!fired.mv){fired.mv=1;mvMusic();SFX.fanfare();for(let i=0;i<70;i++){const m=new THREE.Mesh(GEO.box,new THREE.MeshBasicMaterial({color:[0xe8352a,0xffcc00,0x1aa34a,0x2a7ad8,0xff7ad8][i%5]}));m.scale.set(.08,.02,.12);S3.add(m);conf.push({m,x:BOSS.x+(Math.random()-.5)*6,z:BOSS.z+(Math.random()-.5)*6,y:2+Math.random()*4,v:.6+Math.random()*.8,r:Math.random()*6});}}
      placeBoss('dance',k);placeMe(D[0],D[1],0,true);const a=k*.5;camGo(V3(BOSS.x+Math.sin(a)*4.2,1.6,BOSS.z+Math.cos(a)*4.2),V3(BOSS.x,1.1,BOSS.z),dt,3);
      for(const c of conf){c.y-=c.v*dt*1.6;if(c.y<0)c.y=5;c.m.position.set(c.x,c.y,c.z);c.m.rotation.set(k*3+c.r,k*2,c.r);}
-     endTxt=t('mvA');sub=t('yuzuHead');bubB=t('mvLaugh');}}
+     endTxt=t('mvA');sub=t('yuzuHead');if(k>.6&&k<2.6)bubB=t('mvLaugh');}}
    camApply();ballSize();treeCull(cam.position,ball.position);VR.render(S3,cam);g.drawImage(VR.domElement,0,0,VW,VH);
+   if(vPip){pipDraw();const R=88,cx=22+R,cy=236+R;g.save();g.beginPath();g.arc(cx,cy,R,0,Math.PI*2);g.clip();g.drawImage(pipR.domElement,cx-R,cy-R,R*2,R*2);g.restore();g.lineWidth=6;g.strokeStyle='#fff';g.beginPath();g.arc(cx,cy,R,0,Math.PI*2);g.stroke();
+    g.fillStyle='#fff';g.font='900 18px "Hiragino Maru Gothic ProN",system-ui,sans-serif';g.textAlign='center';g.lineWidth=5;g.strokeStyle='#000a';g.strokeText(t('pipLbl'),cx,cy+R+24);g.fillText(t('pipLbl'),cx,cy+R+24);}
    if(kind==='yuzu'&&$('freeze'))0;
    if(kind==='win'&&real>=L1+.6){g.fillStyle='rgba(42,90,154,.3)';g.fillRect(0,0,VW,VH);}
    if(bubB)drawBub(g,bubB,boss.man.position,2.2,VW,VH,true);if(bubA)drawBub(g,bubA[0],bubA[1],1.9,VW,VH);
    g.textAlign='center';g.lineJoin='round';g.lineWidth=8;g.strokeStyle='#000a';const txt=(s,x,y)=>{g.strokeText(s,x,y);g.fillText(s,x,y);};
    g.fillStyle='#fff';g.font='900 30px "Hiragino Maru Gothic ProN",system-ui,sans-serif';txt(t('hud'),VW/2,52);
    if(timer!=null){g.font='900 54px system-ui,sans-serif';txt(timer.toFixed(2),VW/2,112);}
+   if(snapT){g.fillStyle='#fff';g.font='900 80px "Hiragino Maru Gothic ProN",system-ui,sans-serif';txt(t('snapTxt'),VW/2,VH*.42);}
    if(ff){g.fillStyle='#ffdd55';g.font='900 26px "Hiragino Maru Gothic ProN",system-ui,sans-serif';txt(t('ff'),VW/2,152);}
    if(cap){g.fillStyle='#fff';g.font='900 24px "Hiragino Maru Gothic ProN",system-ui,sans-serif';wrapTxt(g,cap,VW/2,198,VW-40,30,txt);}
    if(endTxt){g.fillStyle=kind==='yuzu'?'#7dff8a':kind==='kubi'?'#ff6a5a':'#ffcc00';g.font='900 62px "Hiragino Maru Gothic ProN",system-ui,sans-serif';txt(endTxt,VW/2,VH-230);}
@@ -1239,7 +1269,7 @@ function frame(now){
  else if(mode==='kubi')kubiFrame(dt,now);
  else if(mode==='replay')replayFrame(dt,now);
  if(mode!=='aim')aimArrow.visible=false;
- camApply();ballSize();treeCull(cam.position,ball.position);R3.render(S3,cam);
+ camApply();ballSize();treeCull(cam.position,ball.position);R3.render(S3,cam);if(G.pipOn&&mode==='shot')pipDraw();
  requestAnimationFrame(frame);
 }
 // ===== はじめ =====
