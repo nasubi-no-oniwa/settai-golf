@@ -46,6 +46,7 @@ function camForShot(P,t,out,dt,spd){
  const b=out.ball,C=out.cup;const db=Math.hypot(b.x-C.x,b.z-C.z);
  if(ORB.on&&!drag&&performance.now()-ORB.at>3000)ORB.on=false;
  if(ORB.on&&t<P.T+.2){const d=7+Math.min(10,Math.max(0,b.y)*.35),cp=Math.cos(ORB.pitch);camGo(V3(b.x+Math.sin(ORB.yaw)*cp*d,Math.max(.4,b.y+Math.sin(ORB.pitch)*d+.4),b.z+Math.cos(ORB.yaw)*cp*d),V3(b.x,b.y,b.z),dt,10);return;}
+ if(P.o&&P.o.b!=null&&t>=P.T-.9){camGo(V3(C.x+6.4,4.6,C.z+2.8),V3(lerp(C.x,POND.x,.55),.2,lerp(C.z,POND.z,.55)),dt*spd,4);return;}
  if(t>=P.T-2.2&&db<14||t>=P.T){camGo(V3(C.x+3.2,2.3,C.z+5.6),V3(C.x+.4,.3,C.z-.2),dt*spd,3);return;}
  if(out.phase==='fly'){const D=aimDir();const h=Math.max(0,b.y);camGo(V3(b.x-D[0]*7,b.y+3+h*.15,b.z-D[1]*7),V3(b.x,b.y,b.z),dt*spd,4);return;}
  // 長く何も起きない間は、そわそわする部長を映す
@@ -56,7 +57,7 @@ function camForShot(P,t,out,dt,spd){
  camGo(V3(b.x+fx*k+fz*2.5,Math.max(2.6,b.y*.7+3),b.z+fz*k-fx*2.5),look,dt*spd,3);
 }
 
-function bossCut(P,t){const sg=t>=P.te&&t<P.T?segOf(P,t):null;return !!(sg&&sg.k==='wait'&&sg.s.d>3&&sg.u>.3&&sg.u<.72);}
+function bossCut(P,t){if(G.swap)return false;const sg=t>=P.te&&t<P.T?segOf(P,t):null;return !!(sg&&sg.k==='wait'&&sg.s.d>3&&sg.u>.3&&sg.u<.72);}
 // クラブを折った場面：折った瞬間から先っぽがカップに入るまでを大きく映し、ボールは左上の小窓に映す
 function breakView(P,t,b){if(b==null||t<b)return null;const hd=Math.min(.9,Math.max(.15,P.T-b-.15));const C=cupPos(P,t);const bp=ball.position;const near=Math.hypot(bp.x-C.x,bp.z-C.z)<12||t>P.T-2.2;
  if(t>=P.T)return null;
@@ -199,8 +200,13 @@ function shotFrame(dt,now){
  const out=sceneAt(P,ts);playEv(P,lastEvT,ts);lastEvT=ts;
  placeBoss(ts<P.T?'nervous':'freeze',now/1000,P);
  const bv=breakView(P,ts,G.b);
- if(bv)camGo(bv.pos,bv.look,dt,bv.pip&&ts>G.b+1.5?3:5);else camForShot(P,ts,out,dt,1);camShake=out.shake||0;
- if(bv&&bv.pip){$('pip').hidden=false;$('pipLbl').hidden=false;$('pipLbl').textContent=t('pipLbl');pipFollow(P,ts,dt,G.pipFirst);G.pipFirst=false;G.pipOn=true;}else if(G.pipOn){$('pip').hidden=true;$('pipLbl').hidden=true;G.pipOn=false;}
+ if(!(bv&&bv.pip))G.swap=false;
+ const swp=bv&&bv.pip&&G.swap;
+ const dtc=G.snapCam?5:dt;G.snapCam=false;
+ if(bv&&!swp)camGo(bv.pos,bv.look,dtc,bv.pip&&ts>G.b+1.5?3:5);else camForShot(P,ts,out,dtc,1);camShake=out.shake||0;
+ if(bv&&bv.pip){$('pip').hidden=false;$('pipLbl').hidden=false;const lb=(swp?t('pipMe'):t('pipLbl'))+'<br><small>'+esc(t('pipTap'))+'</small>';if($('pipLbl').innerHTML!==lb)$('pipLbl').innerHTML=lb;
+  if(swp){const a=G.pipFirst?1:1-Math.exp(-dt*5);pipP.lerp(bv.pos,a);pipL.lerp(bv.look,a);pipCam.position.copy(pipP);pipCam.lookAt(pipL);}else pipFollow(P,ts,dt,G.pipFirst);G.pipFirst=false;G.pipOn=true;}
+ else if(G.pipOn){$('pip').hidden=true;$('pipLbl').hidden=true;G.pipOn=false;}
  ballGlow.visible=ts<P.T;ballGlow.position.set(out.ball.x,.02,out.ball.z);ballGlow.scale.setScalar(1+Math.max(0,out.ball.y)*.05);
  $('hudTime').textContent=Math.min(ts,P.T).toFixed(2);
  const [rs,rb]=reasonTxt(P.ri);
@@ -213,6 +219,7 @@ function shotFrame(dt,now){
   else{$('pip').hidden=true;$('pipLbl').hidden=true;G.res={kind:'win',ms:P.ms,ri:P.ri};markSeen(P.ri);submit();mode='after';G.afterT=0;$('ctrl').hidden=true;SFX.cup();bigText(t('cupIn'));}
  }
 }
+$('pip').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!e.isTrusted||mode!=='shot'||!G.pipOn)return;G.swap=!G.swap;G.pipFirst=true;G.snapCam=true;SFX.ding();});
 // ---- 入ってしまったあと ----
 function afterFrame(dt,now){
  G.afterT+=dt;const k=G.afterT,P=G.P;
