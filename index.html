@@ -765,6 +765,7 @@ function camSnap(pos,look){camP.copy(pos);camL.copy(look);}
 function camApply(){cam.position.copy(camP);if(camShake>0){cam.position.x+=(Math.random()-.5)*camShake;cam.position.y+=(Math.random()-.5)*camShake;}cam.lookAt(camL);}
 function camForShot(P,t,out,dt,spd){
  const b=out.ball,C=out.cup;const db=Math.hypot(b.x-C.x,b.z-C.z);
+ if(ORB.on&&!drag&&performance.now()-ORB.at>3000)ORB.on=false;
  if(ORB.on&&t<P.T+.2){const d=7+Math.min(10,Math.max(0,b.y)*.35),cp=Math.cos(ORB.pitch);camGo(V3(b.x+Math.sin(ORB.yaw)*cp*d,Math.max(.4,b.y+Math.sin(ORB.pitch)*d+.4),b.z+Math.cos(ORB.yaw)*cp*d),V3(b.x,b.y,b.z),dt,10);return;}
  if(t>=P.T-2.2&&db<14||t>=P.T){camGo(V3(C.x+3.2,2.3,C.z+5.6),V3(C.x+.4,.3,C.z-.2),dt*spd,3);return;}
  if(out.phase==='fly'){const D=aimDir();const h=Math.max(0,b.y);camGo(V3(b.x-D[0]*7,b.y+3+h*.15,b.z-D[1]*7),V3(b.x,b.y,b.z),dt*spd,4);return;}
@@ -795,11 +796,11 @@ let charge=null;
 function powerNow(){if(!charge)return 0;const ph=((performance.now()-charge.t0)/850)%2;return Math.round((ph<1?ph:2-ph)*100);}
 // 入力：画面をなぞって向き
 const pad=$('pad');let drag=null;
-const ORB={yaw:0,pitch:.35,on:false};
-function orbReset(){ORB.yaw=0;ORB.pitch=.35;ORB.on=false;}
+const ORB={yaw:0,pitch:.35,on:false,at:0};
+function orbReset(){ORB.yaw=0;ORB.pitch=.35;ORB.on=false;ORB.at=0;}
 pad.addEventListener('pointerdown',e=>{e.preventDefault();if(!e.isTrusted)return;ac();if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};try{pad.setPointerCapture(e.pointerId)}catch(_){}} ,{passive:false});
 pad.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;if(mode==='aim'){AIM.f-=dx/14;AIM.d=((Math.round(AIM.f)%72)+72)%72;}
- else if(mode==='shot'||mode==='replay'){if(!ORB.on){const b=ball.position,v=camP.clone().sub(b);ORB.yaw=Math.atan2(v.x,v.z);ORB.pitch=clamp(Math.asin(clamp(v.y/(v.length()||1),-1,1)),-.2,1.2);ORB.on=true;}ORB.yaw-=dx*.012;ORB.pitch=clamp(ORB.pitch+dy*.008,-.2,1.2);}});
+ else if(mode==='shot'||mode==='replay'){if(!ORB.on){const b=ball.position,v=camP.clone().sub(b);ORB.yaw=Math.atan2(v.x,v.z);ORB.pitch=clamp(Math.asin(clamp(v.y/(v.length()||1),-1,1)),-.2,1.2);ORB.on=true;}ORB.yaw-=dx*.012;ORB.pitch=clamp(ORB.pitch+dy*.008,-.2,1.2);ORB.at=performance.now();}});
 const padEnd=e=>{if(drag&&e.pointerId===drag.id)drag=null;};pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
 addEventListener('contextmenu',e=>e.preventDefault());
 // クラブ
