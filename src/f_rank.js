@@ -140,8 +140,8 @@ async function openRank(board,fromResult){
  const box=$('rankBox');box.innerHTML='<p>'+t('loading')+'</p>';
  try{
   const since=board==='d'?(dayKey(Date.now())*86400000-32400000):0;
-  const [rows,n]=await Promise.all([loadBoard(board),countOf('yuzu',since||undefined).catch(()=>0)]);rankRows=rows;const myId=(ls.get('sg_auth',null)||{}).uid;
-  let h='<table class="rank"><tr class="top"><td class="r">1</td><td class="n">'+esc(t('yuzuRow'))+'</td><td class="c">'+esc(t('people',{n:n.toLocaleString()}))+'</td><td></td></tr>';
+  const [rows,n,kn]=await Promise.all([loadBoard(board),countOf('yuzu',since||undefined).catch(()=>0),countOf('kubi',since||undefined).catch(()=>0)]);rankRows=rows;const myId=(ls.get('sg_auth',null)||{}).uid;
+  let h='<table class="rank"><tr class="kubi"><td class="r">'+esc(t('kubiMark'))+'</td><td class="n">'+esc(t('kubiRow'))+'</td><td class="c">'+esc(t('people',{n:kn.toLocaleString()}))+'</td><td></td></tr><tr class="top"><td class="r">1</td><td class="n">'+esc(t('yuzuRow'))+'</td><td class="c">'+esc(t('people',{n:n.toLocaleString()}))+'</td><td></td></tr>';
   h+=rows.slice(0,100).map((r,i)=>'<tr'+(r.id===myId?' class="me"':'')+'><td class="r">'+(i+2)+'</td><td class="n">'+esc(r.n)+'<br><small style="color:var(--sub);font-size:11px">'+esc(grade(r.s))+'</small></td><td class="c">'+fmt(r.s)+t('sec')+'</td><td class="p"><button data-i="'+i+'">▶</button></td></tr>').join('');
   if(!rows.length)h+='<tr><td></td><td colspan="3">'+t('empty')+'</td></tr>';
   box.innerHTML=h+'</table>';
