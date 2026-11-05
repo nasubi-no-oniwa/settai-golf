@@ -109,6 +109,7 @@ function frame(now){
  else if(mode==='kubi')kubiFrame(dt,now);
  else if(mode==='replay')replayFrame(dt,now);
  if(mode!=='aim')aimArrow.visible=false;
+ if(window.__norender){camApply();requestAnimationFrame(frame);return;}
  camApply();ballSize();treeCull(cam.position,ball.position);R3.render(S3,cam);if(G.pipOn&&mode==='shot')pipDraw();
  requestAnimationFrame(frame);
 }
