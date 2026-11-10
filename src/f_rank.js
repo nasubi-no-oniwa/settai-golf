@@ -69,6 +69,7 @@ async function fbAuth(){
 fbAuth().catch(()=>{});
 const DB=p=>FB.databaseURL+'/sg/'+p;
 const Q=a=>'.json?auth='+encodeURIComponent(a.token);
+const QJ=Q,DBROOT=FB.databaseURL+'/sg';
 const PUT=(url,body)=>fetchR(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 // ずる対策：打った瞬間に、打ち方とサーバーの時計を書く。その時刻で理由が決まる
 function takeTicket(inp){
@@ -93,7 +94,7 @@ async function submit(){
  try{
   const a=await fbAuth();
   const rec={n:myName(),s:r.ms,st:G.st,in:G.in,v:SG.V,t:{'.sv':'timestamp'}};
-  const dk=dayKey(Date.now());const recD={...rec,dk};
+  const dk=dayKey(Date.now());const recD={...rec,dk,ds:dk*100000+r.ms};
   G.sent={rec,recD};
   const cur=await fetchR(DB('all/scores/'+a.uid)+'.json').then(x=>x.ok?x.json():null).catch(()=>null);
   const curD=await fetchR(DB('d/scores/'+a.uid)+'.json').then(x=>x.ok?x.json():null).catch(()=>null);
@@ -122,25 +123,30 @@ $('nameIn').addEventListener('change',()=>{const n=$('nameIn').value.trim();if(n
 // 譲った人・クビの人
 let yuzuN=0,kubiN=0;
 async function sendYuzu(){
- try{if(!G.offline&&G.st!=null&&G.b!=null){const a=await fbAuth();await PUT(DB('yuzu/'+a.uid)+Q(a),{t:{'.sv':'timestamp'},st:G.st,in:G.in,b:Math.round(G.b*1000),v:SG.V});}
-  yuzuN=await countOf('yuzu');if(!$('result').hidden&&G.res&&G.res.kind==='yuzu')showResult();}catch(e){console.warn(e);}
+ try{if(!G.offline&&G.st!=null&&G.b!=null){const a=await fbAuth();await cntPut('yuzu',a,{t:{'.sv':'timestamp'},st:G.st,in:G.in,b:Math.round(G.b*1000),v:SG.V});}
+  yuzuN=await cntNum('yuzu',false);if(!$('result').hidden&&G.res&&G.res.kind==='yuzu')showResult();}catch(e){console.warn(e);}
 }
-async function sendKubi(){try{const a=await fbAuth();await PUT(DB('kubi/'+a.uid)+Q(a),{t:{'.sv':'timestamp'}});kubiN=await countOf('kubi');if(!$('result').hidden&&G.res&&G.res.kind==='kubi')showResult();}catch(e){console.warn(e);}}
+async function sendKubi(){try{const a=await fbAuth();await cntPut('kubi',a,{t:{'.sv':'timestamp'}});kubiN=await cntNum('kubi',false);if(!$('result').hidden&&G.res&&G.res.kind==='kubi')showResult();}catch(e){console.warn(e);}}
+async function cntNum(X,daily){try{if(daily){const r=await fetchR(DB(X+'t')+'.json');if(!r.ok)return 0;const j=await r.json();return j&&j.dk===dayKey(Date.now())?(+j.n||0):0;}const r=await fetchR(DB(X+'c')+'.json');if(!r.ok)return 0;const j=await r.json();return +j||0;}catch(e){return 0;}}
+async function cntPut(X,a,rec){let ok=false;try{const [c,z]=await Promise.all([fetchR(DB(X+'/'+a.uid)+'.json').then(r=>r.ok?r.json():null),fetchR(DB(X+'t')+'.json').then(r=>r.ok?r.json():null)]);const today=dayKey(Date.now()),d0=today*86400000-32400000;const body={};body[X+'/'+a.uid]=rec;if(!c)body[X+'c']={'.sv':{increment:1}};if(!c||!(c.t>=d0)){if(z&&z.dk===today)body[X+'t/n']={'.sv':{increment:1}};else body[X+'t']={dk:today,n:1};}const r=await fetchR(DBROOT+QJ(a),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});ok=r.ok;}catch(_){}if(!ok){const r=await fetchR(DB(X+'/'+a.uid)+QJ(a),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});if(!r.ok)throw new Error('put '+r.status);}}
 async function countOf(p,since){const url=since?DB(p)+'.json?orderBy=%22t%22&startAt='+since:DB(p)+'.json?shallow=true';const r=await fetchR(url);if(!r.ok)return 0;const j=await r.json();return j?Object.keys(j).length:0;}
-async function loadBoard(board){
+const BC={};// ランキングは1分のあいだ使いまわす（読みこみを減らす）
+async function loadBoard(board,fresh){
+ const c=BC[board];if(!fresh&&c&&Date.now()-c.t<60000)return c.rows;
  const today=dayKey(Date.now());
- const url=board==='d'?DB('d/scores')+'.json?orderBy=%22dk%22&equalTo='+today:DB('all/scores')+'.json?orderBy=%22s%22&limitToLast=300';
+ const url=board==='d'?DB('d/scores')+'.json?orderBy=%22ds%22&startAt='+(today*100000)+'&endAt='+(today*100000+99999)+'&limitToLast=100':DB('all/scores')+'.json?orderBy=%22s%22&limitToLast=100';
  const [d,h]=await Promise.all([fetch(url).then(r=>{if(!r.ok)throw 0;return r.json()}),fetch(DB('hidden')+'.json').then(r=>r.ok?r.json():null).catch(()=>null)]);
- return Object.entries(d||{}).map(([id,v])=>({...v,id})).filter(r=>!(h&&h[r.id])&&typeof r.s==='number').sort((a,b)=>b.s-a.s||a.t-b.t);
+ const rows=Object.entries(d||{}).map(([id,v])=>({...v,id})).filter(r=>!(h&&h[r.id])&&typeof r.s==='number'&&(board!=='d'||r.dk===today)).sort((a,b)=>b.s-a.s||a.t-b.t);
+ BC[board]={t:Date.now(),rows};return rows;
 }
-async function myRank(board,uid){try{const rows=await loadBoard(board);const i=rows.findIndex(r=>r.id===uid);return i>=0?i+2:null;}catch(e){return null;}}
+async function myRank(board,uid){try{const rows=await loadBoard(board,true);const i=rows.findIndex(r=>r.id===uid);return i>=0?i+2:null;}catch(e){return null;}}
 let rankFrom=false,rankRows=[],curBoard='d';
 async function openRank(board,fromResult){
  rankFrom=!!fromResult;curBoard=board;show('rankPanel');$('tabDay').classList.toggle('on',board==='d');$('tabAll').classList.toggle('on',board==='all');
  const box=$('rankBox');box.innerHTML='<p>'+t('loading')+'</p>';
  try{
   const since=board==='d'?(dayKey(Date.now())*86400000-32400000):0;
-  const [rows,n,kn]=await Promise.all([loadBoard(board),countOf('yuzu',since||undefined).catch(()=>0),countOf('kubi',since||undefined).catch(()=>0)]);rankRows=rows;const myId=(ls.get('sg_auth',null)||{}).uid;
+  const [rows,n,kn]=await Promise.all([loadBoard(board),cntNum('yuzu',board==='d'),cntNum('kubi',board==='d')]);rankRows=rows;const myId=(ls.get('sg_auth',null)||{}).uid;
   let h='<table class="rank"><tr class="kubi"><td class="r">'+esc(t('kubiMark'))+'</td><td class="n">'+esc(t('kubiRow'))+'</td><td class="c">'+esc(t('people',{n:kn.toLocaleString()}))+'</td><td></td></tr><tr class="top"><td class="r">1</td><td class="n">'+esc(t('yuzuRow'))+'</td><td class="c">'+esc(t('people',{n:n.toLocaleString()}))+'</td><td></td></tr>';
   h+=rows.slice(0,100).map((r,i)=>'<tr'+(r.id===myId?' class="me"':'')+'><td class="r">'+(i+2)+'</td><td class="n">'+esc(r.n)+'<br><small style="color:var(--sub);font-size:11px">'+esc(grade(r.s))+'</small></td><td class="c">'+fmt(r.s)+t('sec')+'</td><td class="p"><button data-i="'+i+'">▶</button></td></tr>').join('');
   if(!rows.length)h+='<tr><td></td><td colspan="3">'+t('empty')+'</td></tr>';
