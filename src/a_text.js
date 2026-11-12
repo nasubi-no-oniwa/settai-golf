@@ -29,7 +29,7 @@ ja:{title:'<em>接待</em>ゴルフ<small>上司を勝たせろ</small>',hud:'�
  yuzuHead:'上司に勝ちを譲った',yuzuBig:'接待成功',yuzuNote:'部長はたいへんご機嫌だ。',yuzuCount:'譲った人 {n}人',
  mvA:'部長の勝ち！',mvB:'ナイスです、部長！',mvC:'さすがです！',pond:'池ポチャ',clink:'カキーン',
  kubiHead:'クビ',kubiBig:'懲戒解雇',kubiNote:'上司にボールを投げて、クビになった。',kubiBub:'クビだ！！',
- post:'接待ゴルフで {s}秒 ねばったけど、上司に勝ってしまった\n称号「{g}」',postYuzu:'上司に勝ちを譲りました。',postKubi:'上司にボールを投げて、クビになりました。',maxd:'最大 約{m}m',snapTxt:'バキッ',pipLbl:'いまのボール',pipMe:'自分とカップ',pipTap:'タップで入れかえ',kubiMark:'クビ',kubiRow:'クビになった人',mvLaugh:'ワッハッハ',seen:'見た理由 {n}／{m}',kubiCount:'クビになった人 {n}人',tags:'#接待ゴルフ'},
+ post:'接待ゴルフで {s}秒 ねばったけど、上司に勝ってしまった\n称号「{g}」',postYuzu:'上司に勝ちを譲りました。',postKubi:'上司にボールを投げて、クビになりました。',maxd:'最大 約{m}m',snapTxt:'バキッ',pipLbl:'いまのボール',pipMe:'自分とカップ',pipTap:'タップで入れかえ',kubiMark:'クビ',kubiRow:'クビになった人',mvLaugh:'ワッハッハ',seen:'見た理由 {n}／{m}',kubiCount:'クビになった人 {n}人',tags:'#接待ゴルフ #ブラウザゲーム'},
 en:{title:'<em>Let the Boss</em> Win<small>a golf game</small>',hud:'Let the Boss Win',
  how:'The final hole. Your boss\'s putt stopped on the lip.<br>If you sink yours, you win — and that\'s bad. <b>But no matter how you hit it, it goes in.</b><br>The longer it takes to go in, the higher you rank.',
  ctl:'Pick a club at the top, drag left/right to aim, hold the right button and release to hit',
@@ -51,7 +51,7 @@ en:{title:'<em>Let the Boss</em> Win<small>a golf game</small>',hud:'Let the Bos
  yuzuHead:'You let the boss win',yuzuBig:'Mission complete',yuzuNote:'The boss is in a great mood.',yuzuCount:'{n} people let him win',
  mvA:'The boss wins!',mvB:'Nice one, boss!',mvC:'Amazing, sir!',pond:'SPLASH',clink:'CLINK',
  kubiHead:'FIRED',kubiBig:'You\'re fired',kubiNote:'You threw the ball at your boss. You\'re fired.',kubiBub:'YOU\'RE FIRED!!',
- post:'I stalled {s}s in corporate golf, but still beat my boss\nTitle: "{g}"',postYuzu:'I let my boss win.',postKubi:'I threw the ball at my boss and got fired.',maxd:'Max ≈{m}m',snapTxt:'SNAP!',pipLbl:'Your ball now',pipMe:'You & the cup',pipTap:'Tap to swap',kubiMark:'OUT',kubiRow:'Fired',mvLaugh:'HA HA HA',seen:'Reasons seen {n}／{m}',kubiCount:'{n} people fired',tags:'#接待ゴルフ'},
+ post:'I stalled {s}s in corporate golf, but still beat my boss\nTitle: "{g}"',postYuzu:'I let my boss win.',postKubi:'I threw the ball at my boss and got fired.',maxd:'Max ≈{m}m',snapTxt:'SNAP!',pipLbl:'Your ball now',pipMe:'You & the cup',pipTap:'Tap to swap',kubiMark:'OUT',kubiRow:'Fired',mvLaugh:'HA HA HA',seen:'Reasons seen {n}／{m}',kubiCount:'{n} people fired',tags:'#接待ゴルフ #ブラウザゲーム'},
 zh:{title:'<em>接待</em>高爾夫<small>讓上司贏</small>',hud:'接待高爾夫',
  how:'最後一洞。部長的推桿停在洞口邊。<br>你要是進了，就贏了。<b>但是不管怎麼打，都會進。</b><br>進洞前的時間越長排名越高。看你能拖多久。',
  ctl:'上面選球桿・左右滑動畫面調整方向・長按右邊的按鈕放開就擊球',
@@ -73,7 +73,7 @@ zh:{title:'<em>接待</em>高爾夫<small>讓上司贏</small>',hud:'接待高�
  yuzuHead:'讓上司贏了',yuzuBig:'接待成功',yuzuNote:'部長心情大好。',yuzuCount:'讓了的人 {n}人',
  mvA:'部長贏了！',mvB:'部長好球！',mvC:'不愧是部長！',pond:'掉進池裡',clink:'鏘',
  kubiHead:'開除',kubiBig:'懲戒解僱',kubiNote:'把球丟向上司，被開除了。',kubiBub:'你被開除了！！',
- post:'在接待高爾夫拖了 {s}秒，還是不小心贏了上司\n稱號「{g}」',postYuzu:'我讓上司贏了。',postKubi:'我把球丟向上司，被開除了。',maxd:'最遠 約{m}m',snapTxt:'啪嚓',pipLbl:'現在的球',pipMe:'自己和球洞',pipTap:'點一下切換',kubiMark:'開除',kubiRow:'被開除的人',mvLaugh:'哇哈哈',seen:'看過的理由 {n}／{m}',kubiCount:'被開除的人 {n}人',tags:'#接待ゴルフ'},
+ post:'在接待高爾夫拖了 {s}秒，還是不小心贏了上司\n稱號「{g}」',postYuzu:'我讓上司贏了。',postKubi:'我把球丟向上司，被開除了。',maxd:'最遠 約{m}m',snapTxt:'啪嚓',pipLbl:'現在的球',pipMe:'自己和球洞',pipTap:'點一下切換',kubiMark:'開除',kubiRow:'被開除的人',mvLaugh:'哇哈哈',seen:'看過的理由 {n}／{m}',kubiCount:'被開除的人 {n}人',tags:'#接待ゴルフ #ブラウザゲーム'},
 ko:{title:'<em>접대</em> 골프<small>상사를 이기게 하라</small>',hud:'접대 골프',
  how:'마지막 홀. 부장님의 퍼트는 홀컵 가장자리에서 멈췄다.<br>당신이 넣으면 이겨 버린다. <b>그런데 어떻게 쳐도 들어가 버린다.</b><br>들어갈 때까지 오래 걸릴수록 순위가 높다. 얼마나 버틸 수 있을까.',
  ctl:'위에서 클럽 선택・화면을 좌우로 문질러 방향 조절・오른쪽 버튼을 길게 눌렀다 떼면 샷',
@@ -95,7 +95,7 @@ ko:{title:'<em>접대</em> 골프<small>상사를 이기게 하라</small>',hud:
  yuzuHead:'상사에게 승리를 양보했다',yuzuBig:'접대 성공',yuzuNote:'부장님 기분이 아주 좋다.',yuzuCount:'양보한 사람 {n}명',
  mvA:'부장님 승리!',mvB:'나이스 샷, 부장님!',mvC:'역시 부장님!',pond:'퐁당',clink:'깡',
  kubiHead:'해고',kubiBig:'징계 해고',kubiNote:'상사에게 공을 던져서 해고당했다.',kubiBub:'자넨 해고야!!',
- post:'접대 골프에서 {s}초 버텼지만 상사를 이겨 버렸다\n칭호 "{g}"',postYuzu:'상사에게 승리를 양보했습니다.',postKubi:'상사에게 공을 던져서 해고당했습니다.',maxd:'최대 약 {m}m',snapTxt:'뚝',pipLbl:'지금 공',pipMe:'나와 홀컵',pipTap:'탭해서 바꾸기',kubiMark:'해고',kubiRow:'해고된 사람',mvLaugh:'와하하',seen:'본 이유 {n}／{m}',kubiCount:'해고된 사람 {n}명',tags:'#接待ゴルフ'}};
+ post:'접대 골프에서 {s}초 버텼지만 상사를 이겨 버렸다\n칭호 "{g}"',postYuzu:'상사에게 승리를 양보했습니다.',postKubi:'상사에게 공을 던져서 해고당했습니다.',maxd:'최대 약 {m}m',snapTxt:'뚝',pipLbl:'지금 공',pipMe:'나와 홀컵',pipTap:'탭해서 바꾸기',kubiMark:'해고',kubiRow:'해고된 사람',mvLaugh:'와하하',seen:'본 이유 {n}／{m}',kubiCount:'해고된 사람 {n}명',tags:'#接待ゴルフ #ブラウザゲーム'}};
 const LANGS=[['ja','日本語'],['en','English'],['zh','繁中'],['ko','한국어']];
 let lang=(q=>['ja','en','zh','ko'].includes(q)?q:null)(new URLSearchParams(location.search).get('lang'))||ls.get('sg_lang',null)||(n=>n.startsWith('ja')?'ja':n.startsWith('zh')?'zh':n.startsWith('ko')?'ko':'en')((navigator.language||'ja').toLowerCase());
 const LI={ja:5,en:6,zh:7,ko:8};
