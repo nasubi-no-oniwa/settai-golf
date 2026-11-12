@@ -82,7 +82,7 @@ async function makeVideo(){
   const canShare=navigator.canShare&&navigator.canShare({files:[file]});
   $('vShare').hidden=!canShare;$('vSave').hidden=false;
   $('vMsg').textContent=canShare?t('vmade'):t('shareHint');
-  $('vShare').onclick=async()=>{try{await navigator.share({files:[file],text:postText()+'\n'+GAME_URL});}catch(e){}};
+  $('vShare').onclick=async()=>{try{await navigator.share({files:[file],text:postText()+'\n'+GAME_URL+(quoteURL()?'\n'+quoteURL():'')});}catch(e){}};
   $('vSave').onclick=()=>{const a=document.createElement('a');a.href=url;a.download='settai-golf_'+(r.kind==='win'?fmt(r.ms):r.kind)+'.'+vidExt;document.body.appendChild(a);a.click();a.remove();};
  }
 }

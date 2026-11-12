@@ -50,7 +50,11 @@ function showResult(){
  $('vidBtn').hidden=false;
 }
 function postText(){const r=G.res;return (r.kind==='yuzu'?t('postYuzu'):r.kind==='kubi'?t('postKubi'):t('post',{s:fmt(r.ms),g:grade(r.ms)}))+'\n'+t('tags');}
-$('xBtn').onclick=()=>{if(!G.res)return;const u='https://x.com/intent/post?text='+encodeURIComponent(postText())+'&url='+encodeURIComponent(GAME_URL);const w=window.open(u,'_blank');if(!w)location.href=u;};
+// Xの投稿で引用するツイート（なすびのお庭の管理ページ quote/ で日本語・英語を貼りかえられる）
+let QUOTE={};fetch('https://ft-red-default-rtdb.asia-southeast1.firebasedatabase.app/xquote/g/settai-golf.json').then(r=>r.json()).then(d=>{if(d&&typeof d==='object')QUOTE=d;}).catch(()=>{});
+function quoteURL(){const u=(lang==='ja'?QUOTE.ja:QUOTE.en)||'';return /^https:\/\/x\.com\/[A-Za-z0-9_]{1,15}\/status\/\d{5,25}$/.test(u)?u:'';}
+function xIntent(text,url){const q=quoteURL();return 'https://x.com/intent/post?text='+encodeURIComponent(q?text+'\n'+url:text)+'&url='+encodeURIComponent(q||url);}
+$('xBtn').onclick=()=>{if(!G.res)return;const u=xIntent(postText(),GAME_URL);const w=window.open(u,'_blank');if(!w)location.href=u;};
 $('vX').onclick=$('xBtn').onclick;
 
 // ===== ランキング（Firebase：ft-green の sg の下） =====
